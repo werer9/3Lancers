@@ -1,43 +1,34 @@
-import { memo, useEffect } from 'react';
+import { memo } from 'react';
 import { useDrag } from 'react-dnd';
-import { getEmptyImage } from 'react-dnd-html5-backend';
 import { renderWidget } from './utils';
 
-function getStyles(left, top, isDragging) {
+function getStyles(left, top) {
   const transform = `translate3d(${left}px, ${top}px, 0)`;
 
   return {
     position: 'absolute',
     transform,
     WebkitTransform: transform,
-    opacity: isDragging ? 0 : 1,
-    height: isDragging ? 0 : '',
   };
 }
 
 // A component for widgets that can be dragged
 const DraggableWidget = memo((props) => {
-  const { id, left, top, widgetType } = props;
-  const [{ isDragging }, drag, preview] = useDrag(
+  const { id, position, type, data, date } = props;
+  const [, drag] = useDrag(
     () => ({
-      type: widgetType,
-      item: { id, left, top },
+      type,
+      item: { id, position },
       collect: (monitor) => ({
         isDragging: monitor.isDragging(),
       }),
     }),
-    [id, left, top]
+    [id, position, type]
   );
 
-  // Hide the browser generated preview when widget is being dragged.
-  // Let the custom drag layer render a new version with correct position when dragging.
-  useEffect(() => {
-    preview(getEmptyImage(), { captureDraggingState: true });
-  }, []);
-
   return (
-    <div ref={drag} style={getStyles(left, top, isDragging)}>
-      {renderWidget(widgetType, { id, left, top })}
+    <div ref={drag} style={getStyles(position.col, position.row)}>
+      {renderWidget(type, { data, date })}
     </div>
   );
 });
